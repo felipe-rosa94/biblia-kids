@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Nenhum acesso não autenticado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Cada aluno lê e escreve apenas o próprio documento
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read: if isAdmin();
+    }
+
+    // Planos de estudo: admin escreve, autenticados leem
+    match /studyPlans/{planId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Lições: admin escreve tudo; aluno lê apenas as publicadas
+    match /lessons/{lessonId} {
+      allow read: if isSignedIn() && (isAdmin() || resource.data.published == true);
+      allow write: if isAdmin();
+    }
+
+    // Questões: admin escreve; autenticados leem (a lição já controla o acesso)
+    match /questions/{questionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Progresso: aluno escreve e lê apenas o próprio; admin lê tudo
+    match /progress/{progressId} {
+      allow read: if isSignedIn() && (
+        isAdmin() || resource.data.userId == request.auth.uid
+      );
+      allow create, update: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
