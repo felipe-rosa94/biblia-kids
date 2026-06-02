@@ -2,8 +2,6 @@ import {createContext, useContext, useState, useEffect, useCallback} from 'react
 import {
     onAuthStateChanged,
     signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     updateProfile,
@@ -31,17 +29,6 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        getRedirectResult(auth)
-            .then(result => {
-                const msg = result
-                    ? `OK — uid: ${result.user.uid}`
-                    : 'null (nenhum redirect pendente)'
-                localStorage.setItem('__debug_redirect', `[getRedirectResult] ${msg}`)
-            })
-            .catch((err: unknown) => {
-                const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
-                localStorage.setItem('__debug_redirect', `[getRedirectResult ERRO] ${msg}`)
-            })
 
         const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
             if (!firebaseUser) {
@@ -73,16 +60,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }, [])
 
     async function signInWithGoogle() {
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        localStorage.setItem('__debug_redirect', `[signInWithGoogle] isMobile=${isMobile}`)
         try {
-            if (isMobile) {
-                await signInWithRedirect(auth, googleProvider)
-            } else {
-                await signInWithPopup(auth, googleProvider)
-            }
+            await signInWithPopup(auth, googleProvider)
+            localStorage.setItem('__debug_redirect', '[signInWithGoogle] popup OK')
         } catch (err: unknown) {
-            const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+            const code = (err as { code?: string }).code ?? ''
+            const msg = err instanceof Error ? `${err.name}(${code}): ${err.message}` : String(err)
             localStorage.setItem('__debug_redirect', `[signInWithGoogle ERRO] ${msg}`)
             throw err
         }

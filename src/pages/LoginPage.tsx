@@ -33,8 +33,14 @@ export function LoginPage() {
     const [debugMsg, setDebugMsg] = useState<string | null>(null)
 
     useEffect(() => {
-        const stored = localStorage.getItem('__debug_redirect')
-        if (stored) setDebugMsg(stored)
+        // Lê imediatamente e depois de 2s para capturar resultados async
+        const read = () => {
+            const stored = localStorage.getItem('__debug_redirect')
+            if (stored) setDebugMsg(stored)
+        }
+        read()
+        const t = setTimeout(read, 2000)
+        return () => clearTimeout(t)
     }, [])
 
     useEffect(() => {
