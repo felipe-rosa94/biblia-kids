@@ -2,6 +2,8 @@ import {createContext, useContext, useState, useEffect, useCallback} from 'react
 import {
     onAuthStateChanged,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     updateProfile,
@@ -29,6 +31,12 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        // Em browsers mobile o popup é bloqueado — o Firebase usa redirect internamente.
+        // Precisamos chamar getRedirectResult para processar o retorno do OAuth redirect.
+        getRedirectResult(auth).catch(() => {
+            // Ignora erro de estado ausente (sessionStorage particionado no mobile)
+        })
+
         const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
             if (!firebaseUser) {
                 setUser(null)
@@ -59,7 +67,13 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }, [])
 
     async function signInWithGoogle() {
-        await signInWithPopup(auth, googleProvider)
+        // Popups são bloqueados em browsers mobile — usa redirect nesses casos
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        if (isMobile) {
+            await signInWithRedirect(auth, googleProvider)
+        } else {
+            await signInWithPopup(auth, googleProvider)
+        }
     }
 
     async function signInWithEmail(email: string, password: string) {
