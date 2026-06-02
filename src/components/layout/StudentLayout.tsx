@@ -70,7 +70,7 @@ export function StudentLayout() {
       </aside>
 
       {/* Conteúdo principal */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-w-0">
         {/* Header mobile */}
         <header className="md:hidden flex items-center justify-between bg-white px-4 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
@@ -91,6 +91,13 @@ export function StudentLayout() {
         <nav className="md:hidden flex flex-col bg-white border-t border-gray-100">
           <div className="flex">
             <BottomNavLink to="/dashboard" icon="🏠" label="Início" />
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center flex-1 py-2 text-xs font-bold text-gray-400 transition-colors active:text-gray-600"
+            >
+              <span className="text-xl">🚪</span>
+              Sair
+            </button>
           </div>
           <span className="text-[10px] text-gray-300 font-semibold text-center py-1">v{__APP_VERSION__}</span>
         </nav>
