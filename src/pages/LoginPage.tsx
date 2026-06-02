@@ -217,6 +217,8 @@ export function LoginPage() {
                     Para professores e líderes, peça ao administrador para liberar seu acesso.
                 </p>
 
+                <span className="text-[10px] text-gray-300 font-semibold">v{__APP_VERSION__}</span>
+
                 {import.meta.env.DEV && (
                     <button
                         onClick={signInAsAdmin}

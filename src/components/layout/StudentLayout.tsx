@@ -65,6 +65,8 @@ export function StudentLayout() {
         >
           Sair
         </button>
+
+        <span className="text-[10px] text-gray-300 font-semibold text-center mt-1">v{__APP_VERSION__}</span>
       </aside>
 
       {/* Conteúdo principal */}
@@ -86,8 +88,11 @@ export function StudentLayout() {
         </div>
 
         {/* Bottom nav mobile */}
-        <nav className="md:hidden flex bg-white border-t border-gray-100">
-          <BottomNavLink to="/dashboard" icon="🏠" label="Início" />
+        <nav className="md:hidden flex flex-col bg-white border-t border-gray-100">
+          <div className="flex">
+            <BottomNavLink to="/dashboard" icon="🏠" label="Início" />
+          </div>
+          <span className="text-[10px] text-gray-300 font-semibold text-center py-1">v{__APP_VERSION__}</span>
         </nav>
       </main>
     </div>

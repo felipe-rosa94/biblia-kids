@@ -144,6 +144,7 @@ function SidebarContent({
         >
           Sair
         </button>
+        <span className="text-[10px] text-gray-300 font-semibold text-center mt-1">v{__APP_VERSION__}</span>
       </div>
     </>
   )
