@@ -43,7 +43,7 @@ export function AdminPlansPage() {
         </div>
         <button
           onClick={() => navigate('/admin/plans/new')}
-          className="bg-[#CE82FF] text-white font-extrabold py-2.5 px-5 rounded-xl hover:bg-[#b86fe0] transition-colors active:scale-95"
+          className="bg-[#CE82FF] text-white font-extrabold text-sm py-2 px-3 sm:py-2.5 sm:px-5 rounded-xl hover:bg-[#b86fe0] transition-colors active:scale-95"
         >
           + Novo plano
         </button>

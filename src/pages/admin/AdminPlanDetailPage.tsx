@@ -159,7 +159,7 @@ export function AdminPlanDetailPage() {
         </div>
         <button
           onClick={() => setShowForm(v => !v)}
-          className={`font-extrabold py-2.5 px-5 rounded-xl transition-colors active:scale-95
+          className={`font-extrabold text-sm py-2 px-3 sm:py-2.5 sm:px-5 rounded-xl transition-colors active:scale-95
             ${showForm
               ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               : 'bg-[#58CC02] text-white hover:bg-[#46A302]'}`}
