@@ -31,10 +31,9 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Em browsers mobile o popup é bloqueado — o Firebase usa redirect internamente.
-        // Precisamos chamar getRedirectResult para processar o retorno do OAuth redirect.
-        getRedirectResult(auth).catch(() => {
-            // Ignora erro de estado ausente (sessionStorage particionado no mobile)
+        getRedirectResult(auth).catch((err: unknown) => {
+            const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+            alert(`[getRedirectResult] ${msg}`)
         })
 
         const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
@@ -67,12 +66,18 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }, [])
 
     async function signInWithGoogle() {
-        // Popups são bloqueados em browsers mobile — usa redirect nesses casos
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        if (isMobile) {
-            await signInWithRedirect(auth, googleProvider)
-        } else {
-            await signInWithPopup(auth, googleProvider)
+        alert(`[signInWithGoogle] isMobile=${isMobile} | UA=${navigator.userAgent}`)
+        try {
+            if (isMobile) {
+                await signInWithRedirect(auth, googleProvider)
+            } else {
+                await signInWithPopup(auth, googleProvider)
+            }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+            alert(`[signInWithGoogle erro] ${msg}`)
+            throw err
         }
     }
 
