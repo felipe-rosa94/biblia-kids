@@ -181,14 +181,14 @@ export function DashboardPage() {
           <span className="text-2xl">🔥</span>
           <p className="font-extrabold text-gray-800">Sequência semanal</p>
         </div>
-        <div className="flex gap-2 justify-between">
+        <div className="flex gap-1.5 sm:gap-2 justify-between">
           {streakData.map((day, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <motion.div
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.25 + i * 0.05 }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-black
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-black
                   ${day.active
                     ? 'bg-[#58CC02] text-white shadow-md shadow-[#58CC02]/30'
                     : 'bg-gray-100 text-gray-300'}`}

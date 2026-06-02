@@ -19,7 +19,7 @@ export function StudentLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f7f7f7] font-nunito">
+    <div className="flex min-h-screen bg-[#f7f7f7] font-nunito overflow-x-hidden">
       {/* Sidebar — desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-100 px-4 py-6 shrink-0">
         {/* Logo */}
