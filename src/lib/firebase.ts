@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -15,3 +15,7 @@ export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const googleProvider = new GoogleAuthProvider()
+
+// iOS Safari limpa sessionStorage ao voltar de um redirect OAuth (ITP).
+// localStorage sobrevive ao redirect e resolve o erro "missing initial state".
+setPersistence(auth, browserLocalPersistence)
