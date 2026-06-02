@@ -144,7 +144,7 @@ export function AdminPlansPage() {
               <p className="text-4xl text-center mb-3">🗑️</p>
               <h2 className="text-lg font-black text-gray-800 text-center mb-2">Excluir plano?</h2>
               <p className="text-sm text-gray-500 font-semibold text-center mb-6">
-                Esta ação não pode ser desfeita. As lições vinculadas a este plano não serão excluídas automaticamente.
+                Esta ação não pode ser desfeita. Todas as lições e questões vinculadas a este plano serão excluídas.
               </p>
               <div className="flex gap-3">
                 <button

@@ -102,6 +102,8 @@ export async function updateStudyPlan(
 }
 
 export async function deleteStudyPlan(planId: string): Promise<void> {
+  const lessons = await getLessonsForPlan(planId)
+  await Promise.all(lessons.map(l => deleteLesson(l.id)))
   await deleteDoc(doc(db, 'studyPlans', planId))
 }
 
@@ -173,6 +175,31 @@ export async function publishLesson(lessonId: string): Promise<void> {
   await updateDoc(doc(db, 'lessons', lessonId), { published: true })
 }
 
+export async function updateLesson(
+  lessonId: string,
+  data: {
+    title: string
+    weekNumber: number
+    baseVerse: string
+    verseText: string
+    availableFromDateStr: string
+  },
+): Promise<void> {
+  await updateDoc(doc(db, 'lessons', lessonId), {
+    title: data.title,
+    weekNumber: data.weekNumber,
+    baseVerse: data.baseVerse,
+    verseText: data.verseText,
+    availableFrom: Timestamp.fromDate(new Date(data.availableFromDateStr)),
+  })
+}
+
+export async function deleteLesson(lessonId: string): Promise<void> {
+  const questions = await getQuestionsForLesson(lessonId)
+  await Promise.all(questions.map(q => deleteDoc(doc(db, 'questions', q.id))))
+  await deleteDoc(doc(db, 'lessons', lessonId))
+}
+
 // ── Questions ─────────────────────────────────────────────────────────────────
 
 export async function getQuestionsForLesson(lessonId: string): Promise<Question[]> {
@@ -186,6 +213,17 @@ export async function getQuestionsForLesson(lessonId: string): Promise<Question[
 export async function createQuestion(data: Omit<Question, 'id'>): Promise<Question> {
   const ref = await addDoc(collection(db, 'questions'), data)
   return { id: ref.id, ...data }
+}
+
+export async function updateQuestion(
+  questionId: string,
+  data: Omit<Question, 'id'>,
+): Promise<void> {
+  await updateDoc(doc(db, 'questions', questionId), { ...data })
+}
+
+export async function deleteQuestion(questionId: string): Promise<void> {
+  await deleteDoc(doc(db, 'questions', questionId))
 }
 
 // ── Progress ──────────────────────────────────────────────────────────────────

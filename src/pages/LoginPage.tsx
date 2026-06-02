@@ -1,20 +1,77 @@
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {motion} from 'framer-motion'
+import {motion, AnimatePresence} from 'framer-motion'
 import {useAuth} from '../features/auth/useAuth'
 import {BibleIcon} from '../assets/BibleIcon'
 
+type EmailMode = 'login' | 'signup'
+
+const FIREBASE_ERRORS: Record<string, string> = {
+    'auth/invalid-credential': 'Email ou senha incorretos.',
+    'auth/user-not-found': 'Nenhuma conta com esse email.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/email-already-in-use': 'Esse email já está cadastrado.',
+    'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
+    'auth/invalid-email': 'Email inválido.',
+    'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos.',
+}
+
+const FIELD =
+    'w-full border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1CB0F6]/40 text-sm'
+
 export function LoginPage() {
-    const {user, signInWithGoogle, signInAsAdmin} = useAuth()
+    const {user, signInWithGoogle, signInWithEmail, signUpWithEmail, signInAsAdmin} = useAuth()
     const navigate = useNavigate()
+
+    const [showEmail, setShowEmail] = useState(false)
+    const [mode, setMode] = useState<EmailMode>('login')
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         if (user) navigate(user.role === 'admin' ? '/admin' : '/dashboard', {replace: true})
     }, [user, navigate])
 
+    function resetForm() {
+        setName('')
+        setEmail('')
+        setPassword('')
+        setError(null)
+    }
+
+    function handleToggleMode() {
+        setMode(m => m === 'login' ? 'signup' : 'login')
+        setError(null)
+    }
+
+    function handleToggleEmail() {
+        setShowEmail(v => !v)
+        resetForm()
+    }
+
+    async function handleEmailSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        setLoading(true)
+        setError(null)
+        try {
+            if (mode === 'login') {
+                await signInWithEmail(email, password)
+            } else {
+                await signUpWithEmail(name.trim(), email, password)
+            }
+        } catch (err: unknown) {
+            const code = (err as {code?: string}).code ?? ''
+            setError(FIREBASE_ERRORS[code] ?? 'Ocorreu um erro. Tente novamente.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
-        <div
-            className="min-h-screen bg-gradient-to-b from-[#1CB0F6] to-[#CE82FF] flex flex-col items-center justify-center px-6 font-nunito">
+        <div className="min-h-screen bg-gradient-to-b from-[#1CB0F6] to-[#CE82FF] flex flex-col items-center justify-center px-6 font-nunito">
             <motion.div
                 initial={{scale: 0.85, opacity: 0}}
                 animate={{scale: 1, opacity: 1}}
@@ -48,11 +105,118 @@ export function LoginPage() {
                     Entrar com Google
                 </motion.button>
 
+                {/* Divisor */}
+                <div className="flex items-center gap-3 w-full">
+                    <div className="flex-1 h-px bg-gray-200"/>
+                    <span className="text-xs font-bold text-gray-400">ou</span>
+                    <div className="flex-1 h-px bg-gray-200"/>
+                </div>
+
+                {/* Toggle email/senha */}
+                <button
+                    onClick={handleToggleEmail}
+                    className="w-full py-3.5 px-6 rounded-2xl border-2 border-[#1CB0F6]/30 text-[#1CB0F6] font-extrabold text-base hover:bg-[#1CB0F6]/5 transition-colors"
+                >
+                    {showEmail ? '✕ Fechar' : '✉️ Entrar com email'}
+                </button>
+
+                {/* Formulário email/senha */}
+                <AnimatePresence>
+                    {showEmail && (
+                        <motion.form
+                            key="email-form"
+                            initial={{opacity: 0, height: 0}}
+                            animate={{opacity: 1, height: 'auto'}}
+                            exit={{opacity: 0, height: 0}}
+                            className="overflow-hidden w-full"
+                            onSubmit={handleEmailSubmit}
+                        >
+                            <div className="flex flex-col gap-3 pt-1">
+                                {/* Tabs login / cadastro */}
+                                <div className="flex rounded-xl overflow-hidden border border-gray-200 text-sm font-extrabold">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('login'); setError(null) }}
+                                        className={`flex-1 py-2 transition-colors ${mode === 'login' ? 'bg-[#1CB0F6] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                                    >
+                                        Entrar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('signup'); setError(null) }}
+                                        className={`flex-1 py-2 transition-colors ${mode === 'signup' ? 'bg-[#1CB0F6] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                                    >
+                                        Cadastrar
+                                    </button>
+                                </div>
+
+                                <AnimatePresence mode="wait">
+                                    {mode === 'signup' && (
+                                        <motion.input
+                                            key="name"
+                                            initial={{opacity: 0, height: 0}}
+                                            animate={{opacity: 1, height: 'auto'}}
+                                            exit={{opacity: 0, height: 0}}
+                                            value={name}
+                                            onChange={e => setName(e.target.value)}
+                                            placeholder="Seu nome"
+                                            required
+                                            className={FIELD}
+                                        />
+                                    )}
+                                </AnimatePresence>
+
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="Email"
+                                    required
+                                    autoComplete="email"
+                                    className={FIELD}
+                                />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    placeholder="Senha"
+                                    required
+                                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                                    className={FIELD}
+                                />
+
+                                {error && (
+                                    <p className="text-xs font-bold text-[#FF4B4B] text-center">{error}</p>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-[#1CB0F6] hover:bg-[#0094d4] text-white font-extrabold py-3.5 rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading
+                                        ? 'Aguarde…'
+                                        : mode === 'login' ? 'Entrar' : 'Criar conta'}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleToggleMode}
+                                    className="text-xs text-gray-400 font-bold hover:text-gray-600 text-center"
+                                >
+                                    {mode === 'login'
+                                        ? 'Não tem conta? Cadastre-se'
+                                        : 'Já tem conta? Entrar'}
+                                </button>
+                            </div>
+                        </motion.form>
+                    )}
+                </AnimatePresence>
+
                 <p className="text-xs text-gray-400 text-center font-semibold leading-relaxed">
                     Para professores e líderes, peça ao administrador para liberar seu acesso.
                 </p>
 
-                {/* Link de acesso admin — visível apenas em desenvolvimento */}
                 {import.meta.env.DEV && (
                     <button
                         onClick={signInAsAdmin}

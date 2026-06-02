@@ -7,6 +7,7 @@ import {
   getLessonsForPlan,
   createLesson,
   publishLesson,
+  deleteLesson,
 } from '../../lib/firestore'
 import type { StudyPlan, Lesson } from '../../types'
 
@@ -41,6 +42,8 @@ export function AdminPlanDetailPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<LessonFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!planId) return
@@ -103,6 +106,19 @@ export function AdminPlanDetailPage() {
     }
   }
 
+  async function handleDelete(lessonId: string) {
+    setDeletingId(lessonId)
+    try {
+      await deleteLesson(lessonId)
+      setLessons(prev => prev.filter(l => l.id !== lessonId))
+    } catch {
+      alert('Não foi possível excluir a lição. Tente novamente.')
+    } finally {
+      setDeletingId(null)
+      setConfirmDeleteId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -138,7 +154,7 @@ export function AdminPlanDetailPage() {
         <div>
           <h1 className="text-2xl font-black text-gray-800">{plan.title}</h1>
           <p className="text-sm text-gray-500 font-semibold mt-1">
-            {lessons.length} lição{lessons.length !== 1 ? 'ões' : ''}
+            {lessons.length} {lessons.length !== 1 ? 'lições' : 'lição'}
           </p>
         </div>
         <button
@@ -282,9 +298,7 @@ export function AdminPlanDetailPage() {
                 <div className="flex flex-col gap-2 shrink-0">
                   <ActionButton
                     color="blue"
-                    onClick={() =>
-                      navigate(`/admin/plans/${planId}/lessons/${lesson.id}/questions`)
-                    }
+                    onClick={() => navigate(`/admin/plans/${planId}/lessons/${lesson.id}/questions`)}
                   >
                     Ver questões
                   </ActionButton>
@@ -299,12 +313,66 @@ export function AdminPlanDetailPage() {
                   >
                     Preview
                   </ActionButton>
+                  <ActionButton
+                    color="orange"
+                    onClick={() => navigate(`/admin/plans/${planId}/lessons/${lesson.id}`)}
+                  >
+                    Editar
+                  </ActionButton>
+                  <ActionButton
+                    color="red"
+                    onClick={() => setConfirmDeleteId(lesson.id)}
+                  >
+                    Excluir
+                  </ActionButton>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      {/* Modal de confirmação de exclusão */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+            onClick={() => setConfirmDeleteId(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full"
+            >
+              <p className="text-4xl text-center mb-3">🗑️</p>
+              <h2 className="text-lg font-black text-gray-800 text-center mb-2">Excluir lição?</h2>
+              <p className="text-sm text-gray-500 font-semibold text-center mb-6">
+                Esta ação não pode ser desfeita. Todas as questões vinculadas a esta lição serão excluídas.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(confirmDeleteId)}
+                  disabled={deletingId === confirmDeleteId}
+                  className="flex-1 py-2.5 rounded-xl font-extrabold text-white bg-[#FF4B4B] hover:bg-[#e03e3e] transition-colors disabled:opacity-50"
+                >
+                  {deletingId === confirmDeleteId ? 'Excluindo…' : 'Excluir'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -321,6 +389,8 @@ const ACTION_STYLES = {
   blue: 'text-[#1CB0F6] border-[#1CB0F6]/30 hover:bg-[#1CB0F6]/10',
   green: 'text-[#58CC02] border-[#58CC02]/30 hover:bg-[#58CC02]/10',
   purple: 'text-[#9333EA] border-[#CE82FF]/30 hover:bg-[#CE82FF]/10',
+  orange: 'text-[#FF9600] border-[#FF9600]/30 hover:bg-[#FF9600]/10',
+  red: 'text-[#FF4B4B] border-[#FF4B4B]/30 hover:bg-[#FF4B4B]/10',
 }
 
 function ActionButton({

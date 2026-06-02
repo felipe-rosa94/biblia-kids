@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   getStudyPlans,
   getLessonsForPlan,
   getQuestionsForLesson,
   createQuestion,
+  deleteQuestion,
 } from '../../lib/firestore'
 import type { StudyPlan, Lesson, Question, QuestionType } from '../../types'
 
@@ -36,6 +37,7 @@ const FIELD_CLASS =
 
 export function AdminQuestionsPage() {
   const { planId, lessonId } = useParams<{ planId: string; lessonId: string }>()
+  const navigate = useNavigate()
 
   const [plan, setPlan] = useState<StudyPlan | null>(null)
   const [lesson, setLesson] = useState<Lesson | null>(null)
@@ -45,6 +47,8 @@ export function AdminQuestionsPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<QuestionFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!planId || !lessonId) return
@@ -113,6 +117,19 @@ export function AdminQuestionsPage() {
     const opts = [...form.wordOptions]
     opts[index] = value
     setForm(f => ({ ...f, wordOptions: opts }))
+  }
+
+  async function handleDelete(questionId: string) {
+    setDeletingId(questionId)
+    try {
+      await deleteQuestion(questionId)
+      setQuestions(prev => prev.filter(q => q.id !== questionId))
+    } catch {
+      alert('Não foi possível excluir a questão. Tente novamente.')
+    } finally {
+      setDeletingId(null)
+      setConfirmDeleteId(null)
+    }
   }
 
   if (loading) {
@@ -391,11 +408,68 @@ export function AdminQuestionsPage() {
                     </div>
                   )}
                 </div>
+
+                <div className="flex flex-col gap-2 shrink-0">
+                  <button
+                    onClick={() => navigate(`/admin/plans/${planId}/lessons/${lessonId}/questions/${q.id}`)}
+                    className="text-xs font-extrabold border px-3 py-1.5 rounded-lg transition-colors text-[#FF9600] border-[#FF9600]/30 hover:bg-[#FF9600]/10"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(q.id)}
+                    className="text-xs font-extrabold border px-3 py-1.5 rounded-lg transition-colors text-[#FF4B4B] border-[#FF4B4B]/30 hover:bg-[#FF4B4B]/10"
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      {/* Modal de confirmação de exclusão */}
+      <AnimatePresence>
+        {confirmDeleteId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+            onClick={() => setConfirmDeleteId(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full"
+            >
+              <p className="text-4xl text-center mb-3">🗑️</p>
+              <h2 className="text-lg font-black text-gray-800 text-center mb-2">Excluir questão?</h2>
+              <p className="text-sm text-gray-500 font-semibold text-center mb-6">
+                Esta ação não pode ser desfeita.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(confirmDeleteId)}
+                  disabled={deletingId === confirmDeleteId}
+                  className="flex-1 py-2.5 rounded-xl font-extrabold text-white bg-[#FF4B4B] hover:bg-[#e03e3e] transition-colors disabled:opacity-50"
+                >
+                  {deletingId === confirmDeleteId ? 'Excluindo…' : 'Excluir'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

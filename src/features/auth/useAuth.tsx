@@ -1,5 +1,12 @@
 import {createContext, useContext, useState, useEffect, useCallback} from 'react'
-import {onAuthStateChanged, signInWithPopup, signOut} from 'firebase/auth'
+import {
+    onAuthStateChanged,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    signOut,
+} from 'firebase/auth'
 import {auth, googleProvider} from '../../lib/firebase'
 import {getUserDoc, createUserDoc, updateLastLogin} from '../../lib/firestore'
 import type {AppUser} from '../../types'
@@ -8,9 +15,10 @@ interface AuthContextValue {
     user: AppUser | null
     loading: boolean
     signInWithGoogle: () => Promise<void>
+    signInWithEmail: (email: string, password: string) => Promise<void>
+    signUpWithEmail: (name: string, email: string, password: string) => Promise<void>
     signInAsAdmin: () => Promise<void>
     logout: () => Promise<void>
-    // Chame após salvar progresso para refletir o novo XP na sidebar
     refreshUser: () => Promise<void>
 }
 
@@ -52,10 +60,19 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     async function signInWithGoogle() {
         await signInWithPopup(auth, googleProvider)
-        // onAuthStateChanged acima cuida do restante
     }
 
-    // Mantido para o botão de dev na LoginPage — abre o mesmo popup Google
+    async function signInWithEmail(email: string, password: string) {
+        await signInWithEmailAndPassword(auth, email, password)
+    }
+
+    async function signUpWithEmail(name: string, email: string, password: string) {
+        const credential = await createUserWithEmailAndPassword(auth, email, password)
+        await updateProfile(credential.user, {displayName: name})
+        // Força o onAuthStateChanged a ler o displayName atualizado
+        await credential.user.reload()
+    }
+
     const signInAsAdmin = signInWithGoogle
 
     async function logout() {
@@ -69,7 +86,16 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     }, [])
 
     return (
-        <AuthContext.Provider value={{user, loading, signInWithGoogle, signInAsAdmin, logout, refreshUser}}>
+        <AuthContext.Provider value={{
+            user,
+            loading,
+            signInWithGoogle,
+            signInWithEmail,
+            signUpWithEmail,
+            signInAsAdmin,
+            logout,
+            refreshUser
+        }}>
             {children}
         </AuthContext.Provider>
     )
