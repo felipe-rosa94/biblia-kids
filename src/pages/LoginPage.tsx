@@ -30,6 +30,12 @@ export function LoginPage() {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [debugMsg, setDebugMsg] = useState<string | null>(null)
+
+    useEffect(() => {
+        const stored = localStorage.getItem('__debug_redirect')
+        if (stored) setDebugMsg(stored)
+    }, [])
 
     useEffect(() => {
         if (user) navigate(user.role === 'admin' ? '/admin' : '/dashboard', {replace: true})
@@ -218,6 +224,18 @@ export function LoginPage() {
                 </p>
 
                 <span className="text-[10px] text-gray-300 font-semibold">v{__APP_VERSION__}</span>
+
+                {debugMsg && (
+                    <div className="w-full bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                        <p className="text-[10px] font-bold text-yellow-700 break-all">{debugMsg}</p>
+                        <button
+                            onClick={() => { localStorage.removeItem('__debug_redirect'); setDebugMsg(null) }}
+                            className="text-[10px] text-yellow-500 underline mt-1"
+                        >
+                            limpar
+                        </button>
+                    </div>
+                )}
 
                 {import.meta.env.DEV && (
                     <button

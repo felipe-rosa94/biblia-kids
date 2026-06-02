@@ -31,10 +31,17 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        getRedirectResult(auth).catch((err: unknown) => {
-            const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
-            alert(`[getRedirectResult] ${msg}`)
-        })
+        getRedirectResult(auth)
+            .then(result => {
+                const msg = result
+                    ? `OK — uid: ${result.user.uid}`
+                    : 'null (nenhum redirect pendente)'
+                localStorage.setItem('__debug_redirect', `[getRedirectResult] ${msg}`)
+            })
+            .catch((err: unknown) => {
+                const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+                localStorage.setItem('__debug_redirect', `[getRedirectResult ERRO] ${msg}`)
+            })
 
         const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
             if (!firebaseUser) {
@@ -67,7 +74,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
 
     async function signInWithGoogle() {
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        alert(`[signInWithGoogle] isMobile=${isMobile} | UA=${navigator.userAgent}`)
+        localStorage.setItem('__debug_redirect', `[signInWithGoogle] isMobile=${isMobile}`)
         try {
             if (isMobile) {
                 await signInWithRedirect(auth, googleProvider)
@@ -76,7 +83,7 @@ export function AuthProvider({children}: { children: React.ReactNode }) {
             }
         } catch (err: unknown) {
             const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
-            alert(`[signInWithGoogle erro] ${msg}`)
+            localStorage.setItem('__debug_redirect', `[signInWithGoogle ERRO] ${msg}`)
             throw err
         }
     }
