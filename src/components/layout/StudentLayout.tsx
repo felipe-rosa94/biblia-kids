@@ -58,10 +58,20 @@ export function StudentLayout() {
           <SideNavLink to="/dashboard" icon="🏠">Início</SideNavLink>
         </nav>
 
+        {/* Atalho admin */}
+        {user?.role === 'admin' && (
+          <NavLink
+            to="/admin"
+            className="mt-2 w-full py-3 px-4 rounded-xl text-[#CE82FF] font-bold text-sm hover:bg-purple-50 transition-colors flex items-center gap-2"
+          >
+            <span>⚙️</span> Área Admin
+          </NavLink>
+        )}
+
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="mt-4 w-full py-3 rounded-xl text-gray-400 font-bold text-sm hover:bg-gray-50 hover:text-gray-600 transition-colors"
+          className="mt-2 w-full py-3 rounded-xl text-gray-400 font-bold text-sm hover:bg-gray-50 hover:text-gray-600 transition-colors"
         >
           Sair
         </button>
@@ -91,6 +101,15 @@ export function StudentLayout() {
         <nav className="md:hidden flex flex-col bg-white border-t border-gray-100">
           <div className="flex">
             <BottomNavLink to="/dashboard" icon="🏠" label="Início" />
+            {user?.role === 'admin' && (
+              <NavLink
+                to="/admin"
+                className="flex flex-col items-center justify-center flex-1 py-2 text-xs font-bold text-[#CE82FF] transition-colors active:text-purple-500"
+              >
+                <span className="text-xl">⚙️</span>
+                Admin
+              </NavLink>
+            )}
             <button
               onClick={handleLogout}
               className="flex flex-col items-center justify-center flex-1 py-2 text-xs font-bold text-gray-400 transition-colors active:text-gray-600"
