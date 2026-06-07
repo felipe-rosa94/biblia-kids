@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {motion, AnimatePresence} from 'framer-motion'
 import {useAuth} from '../features/auth/useAuth'
-import {BibleIcon} from '../assets/BibleIcon'
+import viteLogo from '../assets/vite.svg'
 
 type EmailMode = 'login' | 'signup'
 
@@ -83,7 +83,7 @@ export function LoginPage() {
                     animate={{y: [0, -6, 0]}}
                     transition={{repeat: Infinity, duration: 2.5, ease: 'easeInOut'}}
                 >
-                    <BibleIcon className="w-24 h-24"/>
+                    <img src={viteLogo} className="w-24 h-24" alt="logo" />
                 </motion.div>
 
                 {/* Título */}

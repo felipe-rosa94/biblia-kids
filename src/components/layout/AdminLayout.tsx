@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/useAuth'
-import { BibleIcon } from '../../assets/BibleIcon'
+import viteLogo from '../../assets/vite.svg'
 
 export function AdminLayout() {
   const { user, logout } = useAuth()
@@ -39,7 +39,7 @@ export function AdminLayout() {
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <BibleIcon className="w-9 h-9" />
+            <img src={viteLogo} className="w-9 h-9" alt="logo" />
             <div>
               <p className="text-base font-black text-gray-800 leading-none">Bíblia Kids</p>
               <span className="text-xs font-bold bg-[#CE82FF]/20 text-[#9333EA] px-2 py-0.5 rounded-full">
@@ -69,7 +69,7 @@ export function AdminLayout() {
             <HamburgerIcon />
           </button>
           <div className="flex items-center gap-2">
-            <BibleIcon className="w-7 h-7" />
+            <img src={viteLogo} className="w-7 h-7" alt="logo" />
             <span className="text-base font-black text-gray-800">Bíblia Kids</span>
             <span className="text-xs font-bold bg-[#CE82FF]/20 text-[#9333EA] px-2 py-0.5 rounded-full">
               Admin
@@ -99,7 +99,7 @@ function SidebarContent({
     <>
       {/* Logo + badge admin — só no desktop (mobile tem no header do drawer) */}
       <div className="hidden md:flex items-center gap-3 mb-8 px-2">
-        <BibleIcon className="w-10 h-10" />
+        <img src={viteLogo} className="w-10 h-10" alt="logo" />
         <div>
           <p className="text-base font-black text-gray-800 leading-none">Bíblia Kids</p>
           <span className="text-xs font-bold bg-[#CE82FF]/20 text-[#9333EA] px-2 py-0.5 rounded-full">

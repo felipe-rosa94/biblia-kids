@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/useAuth'
 import { calculateLevel, levelProgressPercent, xpForCurrentLevel, xpToNextLevel } from '../../utils/xp'
-import { BibleIcon } from '../../assets/BibleIcon'
+import viteLogo from '../../assets/vite.svg'
 
 export function StudentLayout() {
   const { user, logout } = useAuth()
@@ -24,7 +24,7 @@ export function StudentLayout() {
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-100 px-4 py-6 shrink-0">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 px-2">
-          <BibleIcon className="w-10 h-10" />
+          <img src={viteLogo} className="w-14 h-14" alt="logo" />
           <span className="text-xl font-black text-gray-800">Bíblia Kids</span>
         </div>
 
@@ -74,7 +74,7 @@ export function StudentLayout() {
         {/* Header mobile */}
         <header className="md:hidden flex items-center justify-between bg-white px-4 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <BibleIcon className="w-8 h-8" />
+            <img src={viteLogo} className="w-11 h-11" alt="logo" />
             <span className="text-lg font-black text-gray-800">Bíblia Kids</span>
           </div>
           <div className="flex items-center gap-3">
